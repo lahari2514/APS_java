@@ -1,0 +1,34 @@
+
+import java.util.*;
+
+class Solution {
+
+    public boolean isHappy(int n) {
+
+        Set<Integer> seen = new HashSet<>();
+
+        while (n != 1) {
+
+            // If number is already seen, a cycle exists
+            if (seen.contains(n)) {
+                return false;
+            }
+
+            seen.add(n);
+
+            int sum = 0;
+
+            // Find sum of squares of digits
+            while (n > 0) {
+                int digit = n % 10;
+                sum += digit * digit;
+                n = n / 10;
+            }
+
+            n = sum;
+        }
+
+        return true;
+    }
+}
+

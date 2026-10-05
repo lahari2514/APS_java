@@ -1,0 +1,58 @@
+
+import java.util.*;
+
+class Solution {
+
+    public List<List<String>> accountsMerge(List<List<String>> accounts) {
+
+        // Graph: email -> connected emails
+        Map<String, List<String>> graph = new HashMap<>();
+
+        // Email -> person's name
+        Map<String, String> emailToName = new HashMap<>();
+
+        // Build graph
+        for (List<String> account : accounts) {
+
+            String name = account.get(0);
+            String firstEmail = account.get(1);
+
+            emailToName.put(firstEmail, name);
+
+            graph.putIfAbsent(firstEmail, new ArrayList<>());
+
+            for (int i = 2; i < account.size(); i++) {
+
+                String email = account.get(i);
+
+                emailToName.put(email, name);
+
+                graph.putIfAbsent(email, new ArrayList<>());
+
+                // Connect first email with current email
+                graph.get(firstEmail).add(email);
+                graph.get(email).add(firstEmail);
+            }
+        }
+
+        Set<String> visited = new HashSet<>();
+        List<List<String>> result = new ArrayList<>();
+
+        // DFS for every email
+        for (String email : graph.keySet()) {
+
+            if (visited.contains(email)) {
+                continue;
+            }
+
+            List<String> emails = new ArrayList<>();
+
+            dfs(email, graph, visited, emails);
+
+            // Sort emails
+            Collections.sort(emails);
+
+            // Add name at the beginning
+            List<String> account = new ArrayList<>();
+            account.add(emailToName.get(email));
+            account.addAll(emails);

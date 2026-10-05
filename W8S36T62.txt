@@ -1,0 +1,123 @@
+
+import java.util.*;
+
+class Solution {
+
+    public int[] sortItems(int n, int m, int[] group,
+                           List<List<Integer>> beforeItems) {
+
+        // Give every ungrouped item a new unique group
+        for (int i = 0; i < n; i++) {
+            if (group[i] == -1) {
+                group[i] = m++;
+            }
+        }
+
+        // Group graph
+        List<List<Integer>> groupGraph = new ArrayList<>();
+        int[] groupIndegree = new int[m];
+
+        // Item graph
+        List<List<Integer>> itemGraph = new ArrayList<>();
+        int[] itemIndegree = new int[n];
+
+        for (int i = 0; i < m; i++) {
+            groupGraph.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < n; i++) {
+            itemGraph.add(new ArrayList<>());
+        }
+
+        // Build graphs
+        for (int i = 0; i < n; i++) {
+
+            for (int before : beforeItems.get(i)) {
+
+                // Item dependency
+                itemGraph.get(before).add(i);
+                itemIndegree[i]++;
+
+                // If they belong to different groups,
+                // create a group dependency
+                if (group[before] != group[i]) {
+                    groupGraph.get(group[before]).add(group[i]);
+                    groupIndegree[group[i]]++;
+                }
+            }
+        }
+
+        // Topological sort groups
+        List<Integer> sortedGroups =
+                topologicalSort(groupGraph, groupIndegree);
+
+        if (sortedGroups.size() != m) {
+            return new int[0];
+        }
+
+        // Topological sort items
+        List<Integer> sortedItems =
+                topologicalSort(itemGraph, itemIndegree);
+
+        if (sortedItems.size() != n) {
+            return new int[0];
+        }
+
+        // Put items into their groups
+        List<List<Integer>> itemsInGroup = new ArrayList<>();
+
+        for (int i = 0; i < m; i++) {
+            itemsInGroup.add(new ArrayList<>());
+        }
+
+        for (int item : sortedItems) {
+            itemsInGroup.get(group[item]).add(item);
+        }
+
+        // Build final answer according to group order
+        int[] result = new int[n];
+        int index = 0;
+
+        for (int g : sortedGroups) {
+
+            for (int item : itemsInGroup.get(g)) {
+                result[index++] = item;
+            }
+        }
+
+        return result;
+    }
+
+    // Topological Sort using BFS
+    private List<Integer> topologicalSort(
+            List<List<Integer>> graph,
+            int[] indegree) {
+
+        Queue<Integer> queue = new LinkedList<>();
+
+        for (int i = 0; i < indegree.length; i++) {
+            if (indegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+
+        List<Integer> result = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+
+            int current = queue.poll();
+            result.add(current);
+
+            for (int next : graph.get(current)) {
+
+                indegree[next]--;
+
+                if (indegree[next] == 0) {
+                    queue.offer(next);
+                }
+            }
+        }
+
+        return result;
+    }
+}
